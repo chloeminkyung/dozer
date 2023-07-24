@@ -1,4 +1,5 @@
 use std::time::Duration;
+use itertools::Itertools;
 
 use dozer_ingestion::{
     connectors::{CdcType, Connector, SourceSchema, TableIdentifier},
@@ -7,9 +8,9 @@ use dozer_ingestion::{
 use dozer_types::{
     ingestion_types::IngestionMessageKind,
     log::{error, warn},
-    types::{Field, FieldDefinition, FieldType, Operation, Record, Schema},
+    types::{Field, FieldDefinition, FieldType, Record, Schema},
 };
-
+use dozer_types::types::ProcessorOperation;
 use super::{
     data,
     records::{Operation as RecordsOperation, Records},
@@ -55,15 +56,15 @@ pub async fn run_test_suite_basic_data_ready<T: DataReadyConnectorTest>() {
             num_operations += 1;
             // Check record schema consistency.
             match op {
-                Operation::Insert { new } => {
-                    assert_record_matches_source_schema(new, &schemas[*table_index], true);
+                ProcessorOperation::Insert { new } => {
+                    assert_record_matches_source_schema(&new.get_record().clone_deref(), &schemas[*table_index], true);
                 }
-                Operation::Update { old, new } => {
-                    assert_record_matches_source_schema(old, &schemas[*table_index], false);
-                    assert_record_matches_source_schema(new, &schemas[*table_index], true);
+                ProcessorOperation::Update { old, new } => {
+                    assert_record_matches_source_schema(&old.get_record().clone_deref(), &schemas[*table_index], false);
+                    assert_record_matches_source_schema(&new.get_record().clone_deref(), &schemas[*table_index], true);
                 }
-                Operation::Delete { old } => {
-                    assert_record_matches_source_schema(old, &schemas[*table_index], false);
+                ProcessorOperation::Delete { old } => {
+                    assert_record_matches_source_schema(&old.get_record().clone_deref(), &schemas[*table_index], false);
                 }
             }
         }
@@ -162,16 +163,16 @@ pub async fn run_test_suite_basic_insert_only<T: InsertOnlyConnectorTest>() {
             };
 
             // Operation must be insert.
-            let Operation::Insert { new: actual_record } = operation else {
+            let ProcessorOperation::Insert { new: actual_record } = operation else {
                 panic!("Expected an insert event, but got {:?}", operation);
             };
 
             // Record must match schema.
-            assert_record_matches_schema(&actual_record, actual_schema, false);
+            assert_record_matches_schema(&actual_record.get_record().clone_deref(), actual_schema, false);
 
             // Record must match expected record.
             assert_records_match(
-                &actual_record.values,
+                &actual_record.get_record().get_fields().into_iter().map(|f| f.clone()).collect_vec().as_slice(),
                 &actual_fields,
                 &actual_primary_index,
                 record_iter
@@ -241,21 +242,21 @@ pub async fn run_test_suite_basic_cud<T: CudConnectorTest>() {
 
         // Record must match schema.
         match operation {
-            Operation::Insert { new } => {
-                assert_record_matches_schema(&new, &actual_schema, false);
-                records.append_operation(RecordsOperation::Insert { new: new.values });
+            ProcessorOperation::Insert { new } => {
+                assert_record_matches_schema(&new.get_record().clone_deref(), &actual_schema, false);
+                records.append_operation(RecordsOperation::Insert { new: new.get_record().get_fields().into_iter().map(|f| f.clone()).collect_vec() });
             }
-            Operation::Update { old, new } => {
-                assert_record_matches_schema(&old, &actual_schema, false);
-                assert_record_matches_schema(&new, &actual_schema, false);
+            ProcessorOperation::Update { old, new } => {
+                assert_record_matches_schema(&old.get_record().clone_deref(), &actual_schema, false);
+                assert_record_matches_schema(&new.get_record().clone_deref(), &actual_schema, false);
                 records.append_operation(RecordsOperation::Update {
-                    old: old.values,
-                    new: new.values,
+                    old: old.get_record().get_fields().into_iter().map(|f| f.clone()).collect_vec(),
+                    new: new.get_record().get_fields().into_iter().map(|f| f.clone()).collect_vec(),
                 });
             }
-            Operation::Delete { old } => {
-                assert_record_matches_schema(&old, &actual_schema, false);
-                records.append_operation(RecordsOperation::Delete { old: old.values });
+            ProcessorOperation::Delete { old } => {
+                assert_record_matches_schema(&old.get_record().clone_deref(), &actual_schema, false);
+                records.append_operation(RecordsOperation::Delete { old: old.get_record().get_fields().into_iter().map(|f| f.clone()).collect_vec() });
             }
         }
     }

@@ -27,6 +27,7 @@ rdkafka = {version = "0.32.2", optional = true }
 odbc = { version = "0.17.0", optional = true }
 base64 = "0.21.0"
 include_dir = {version = "0.7.3", optional = true }
+itertools = "0.10.5"
 schema_registry_converter = { version = "3.1.0", features = ["avro"], optional = true }
 regex = "1"
 tonic = {version = "0.8.3"}

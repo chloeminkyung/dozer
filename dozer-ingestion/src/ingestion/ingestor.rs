@@ -79,8 +79,9 @@ mod tests {
     use super::{ChannelForwarder, Ingestor, IngestorForwarder};
     use crossbeam::channel::unbounded;
     use dozer_types::ingestion_types::{IngestionMessage, IngestionMessageKind};
-    use dozer_types::types::{Operation, Record};
+    use dozer_types::types::{ProcessorOperation, ProcessorRecord};
     use std::sync::Arc;
+    use dozer_types::types::ref_types::ProcessorRecordRef;
 
     #[tokio::test]
     async fn test_message_handle() {
@@ -90,13 +91,13 @@ mod tests {
         let ingestor = Ingestor { sender };
 
         // Expected seq no - 2
-        let operation = Operation::Insert {
-            new: Record::new(vec![]),
+        let operation = ProcessorOperation::Insert {
+            new: ProcessorRecordRef::new(ProcessorRecord::new()),
         };
 
         // Expected seq no - 3
-        let operation2 = Operation::Insert {
-            new: Record::new(vec![]),
+        let operation2 = ProcessorOperation::Insert {
+            new: ProcessorRecordRef::new(ProcessorRecord::new()),
         };
 
         ingestor

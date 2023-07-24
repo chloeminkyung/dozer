@@ -12,16 +12,14 @@ use dozer_types::epoch::Epoch;
 use dozer_types::errors::internal::BoxedError;
 use dozer_types::ingestion_types::IngestionMessage;
 use dozer_types::tracing::{debug, info};
-use dozer_types::types::{
-    Field, FieldDefinition, FieldType, ProcessorOperation, ProcessorRecord, Schema,
-    SourceDefinition,
-};
+use dozer_types::types::{Field, FieldDefinition, FieldType, ProcessorOperation, ProcessorRecord, Record, Schema, SourceDefinition};
 
 use std::collections::HashMap;
 use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
+use dozer_types::types::ref_types::ProcessorRecordRef;
 
 use crate::pipeline::builder::{statement_to_pipeline, SchemaSQLContext};
 
@@ -216,7 +214,7 @@ impl Source for TestSource {
         let operations = vec![
             (
                 ProcessorOperation::Insert {
-                    new: ProcessorRecord::new(vec![
+                    new: ProcessorRecordRef::new(ProcessorRecord::from(Record::new(vec![
                         Field::UInt(1001),
                         Field::Timestamp(
                             Utc.datetime_from_str("2023-02-01 22:00:00", DATE_FORMAT)
@@ -224,13 +222,13 @@ impl Source for TestSource {
                                 .into(),
                         ),
                         Field::UInt(1),
-                    ]),
+                    ]))),
                 },
                 TRIPS_PORT,
             ),
             (
                 ProcessorOperation::Insert {
-                    new: ProcessorRecord::new(vec![
+                    new: ProcessorRecordRef::new(ProcessorRecord::from(Record::new(vec![
                         Field::UInt(1002),
                         Field::Timestamp(
                             Utc.datetime_from_str("2023-02-01 22:01:00", DATE_FORMAT)
@@ -238,13 +236,13 @@ impl Source for TestSource {
                                 .into(),
                         ),
                         Field::UInt(2),
-                    ]),
+                    ]))),
                 },
                 TRIPS_PORT,
             ),
             (
                 ProcessorOperation::Insert {
-                    new: ProcessorRecord::new(vec![
+                    new: ProcessorRecordRef::new(ProcessorRecord::from(Record::new(vec![
                         Field::UInt(1003),
                         Field::Timestamp(
                             Utc.datetime_from_str("2023-02-01 22:02:10", DATE_FORMAT)
@@ -252,13 +250,13 @@ impl Source for TestSource {
                                 .into(),
                         ),
                         Field::UInt(3),
-                    ]),
+                    ]))),
                 },
                 TRIPS_PORT,
             ),
             (
                 ProcessorOperation::Insert {
-                    new: ProcessorRecord::new(vec![
+                    new: ProcessorRecordRef::new(ProcessorRecord::from(Record::new(vec![
                         Field::UInt(1004),
                         Field::Timestamp(
                             Utc.datetime_from_str("2023-02-01 22:03:00", DATE_FORMAT)
@@ -266,13 +264,13 @@ impl Source for TestSource {
                                 .into(),
                         ),
                         Field::UInt(2),
-                    ]),
+                    ]))),
                 },
                 TRIPS_PORT,
             ),
             (
                 ProcessorOperation::Insert {
-                    new: ProcessorRecord::new(vec![
+                    new: ProcessorRecordRef::new(ProcessorRecord::from(Record::new(vec![
                         Field::UInt(1005),
                         Field::Timestamp(
                             Utc.datetime_from_str("2023-02-01 22:05:00", DATE_FORMAT)
@@ -280,13 +278,13 @@ impl Source for TestSource {
                                 .into(),
                         ),
                         Field::UInt(1),
-                    ]),
+                    ]))),
                 },
                 TRIPS_PORT,
             ),
             (
                 ProcessorOperation::Insert {
-                    new: ProcessorRecord::new(vec![
+                    new: ProcessorRecordRef::new(ProcessorRecord::from(Record::new(vec![
                         Field::UInt(1006),
                         Field::Timestamp(
                             Utc.datetime_from_str("2023-02-01 22:06:00", DATE_FORMAT)
@@ -294,34 +292,34 @@ impl Source for TestSource {
                                 .into(),
                         ),
                         Field::UInt(2),
-                    ]),
+                    ]))),
                 },
                 TRIPS_PORT,
             ),
             (
                 ProcessorOperation::Insert {
-                    new: ProcessorRecord::new(vec![
+                    new: ProcessorRecordRef::new(ProcessorRecord::from(Record::new(vec![
                         Field::UInt(1),
                         Field::String("Newark Airport".to_string()),
-                    ]),
+                    ]))),
                 },
                 ZONES_PORT,
             ),
             (
                 ProcessorOperation::Insert {
-                    new: ProcessorRecord::new(vec![
+                    new: ProcessorRecordRef::new(ProcessorRecord::from(Record::new(vec![
                         Field::UInt(2),
                         Field::String("Jamaica Bay".to_string()),
-                    ]),
+                    ]))),
                 },
                 ZONES_PORT,
             ),
             (
                 ProcessorOperation::Insert {
-                    new: ProcessorRecord::new(vec![
+                    new: ProcessorRecordRef::new(ProcessorRecord::from(Record::new(vec![
                         Field::UInt(3),
                         Field::String("Allerton/Pelham Gardens".to_string()),
-                    ]),
+                    ]))),
                 },
                 ZONES_PORT,
             ),
@@ -392,10 +390,10 @@ impl Sink for TestSink {
         _op: ProcessorOperation,
     ) -> Result<(), BoxedError> {
         match _op {
-            ProcessorOperation::Delete { old } => info!("o0:-> - {:?}", old.values),
-            ProcessorOperation::Insert { new } => info!("o0:-> + {:?}", new.values),
+            ProcessorOperation::Delete { old } => info!("o0:-> - {:?}", old.get_record().get_fields()),
+            ProcessorOperation::Insert { new } => info!("o0:-> + {:?}", new.get_record().get_fields()),
             ProcessorOperation::Update { old, new } => {
-                info!("o0:-> - {:?}, + {:?}", old.values, new.values)
+                info!("o0:-> - {:?}, + {:?}", old.get_record().get_fields(), new.get_record().get_fields())
             }
         }
 

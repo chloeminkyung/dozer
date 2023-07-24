@@ -4,7 +4,8 @@ use std::fmt::Debug;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crate::{errors::internal::BoxedError, node::OpIdentifier, types::Operation};
+use crate::{errors::internal::BoxedError, node::OpIdentifier};
+use crate::types::ProcessorOperation;
 
 #[derive(Debug, Clone, PartialEq)]
 /// Messages that connectors send to Dozer.
@@ -16,7 +17,7 @@ pub struct IngestionMessage {
 }
 
 impl IngestionMessage {
-    pub fn new_op(txn: u64, seq_no: u64, table_index: usize, op: Operation) -> Self {
+    pub fn new_op(txn: u64, seq_no: u64, table_index: usize, op: ProcessorOperation) -> Self {
         Self {
             identifier: OpIdentifier::new(txn, seq_no),
             kind: IngestionMessageKind::OperationEvent { table_index, op },
@@ -42,7 +43,7 @@ impl IngestionMessage {
 /// All possible kinds of `IngestionMessage`.
 pub enum IngestionMessageKind {
     /// A CDC event.
-    OperationEvent { table_index: usize, op: Operation },
+    OperationEvent { table_index: usize, op: ProcessorOperation },
     /// A connector uses this message kind to notify Dozer that a initial snapshot of the source tables is started
     SnapshottingStarted,
     /// A connector uses this message kind to notify Dozer that a initial snapshot of the source tables is done,

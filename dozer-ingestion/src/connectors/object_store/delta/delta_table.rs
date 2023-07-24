@@ -202,7 +202,7 @@ impl<T: DozerObjectStore + Send> TableWatcher for DeltaTable<T> {
                     if let Err(e) = sender
                         .send(Ok(Some(IngestionMessageKind::OperationEvent {
                             table_index,
-                            op: evt,
+                            op: evt.into(),
                         })))
                         .await
                     {

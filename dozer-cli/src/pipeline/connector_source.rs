@@ -13,7 +13,7 @@ use dozer_types::models::connection::Connection;
 use dozer_types::parking_lot::Mutex;
 use dozer_types::thiserror::{self, Error};
 use dozer_types::tracing::{span, Level};
-use dozer_types::types::{Operation, Schema, SourceDefinition};
+use dozer_types::types::{ProcessorOperation, Schema, SourceDefinition};
 use metrics::{describe_counter, increment_counter};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -276,13 +276,13 @@ impl Source for ConnectorSource {
                         ];
                         const OPERATION_TYPE_LABEL: &str = "operation_type";
                         match &op {
-                            Operation::Delete { .. } => {
+                            ProcessorOperation::Delete { .. } => {
                                 labels.push((OPERATION_TYPE_LABEL, "delete".to_string()));
                             }
-                            Operation::Insert { .. } => {
+                            ProcessorOperation::Insert { .. } => {
                                 labels.push((OPERATION_TYPE_LABEL, "insert".to_string()));
                             }
-                            Operation::Update { .. } => {
+                            ProcessorOperation::Update { .. } => {
                                 labels.push((OPERATION_TYPE_LABEL, "update".to_string()));
                             }
                         }

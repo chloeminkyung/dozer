@@ -90,7 +90,7 @@ pub fn handle_message(
             0,
             req.seq_no as u64,
             table_index,
-            op,
+            op.into(),
         ))
         .map_err(ConnectorError::IngestorError)
 }

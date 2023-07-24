@@ -106,7 +106,7 @@ impl<T: Clone + Send + Sync> TableReader<T> {
                 sender
                     .send(Ok(Some(IngestionMessageKind::OperationEvent {
                         table_index,
-                        op: evt,
+                        op: evt.into(),
                     })))
                     .await
                     .unwrap();

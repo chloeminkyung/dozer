@@ -1,10 +1,11 @@
+use itertools::Itertools;
 use crate::connectors::delta_lake::DeltaLakeConnector;
 use crate::connectors::Connector;
 use crate::ingestion::{IngestionConfig, Ingestor};
 use dozer_types::ingestion_types::IngestionMessage;
 use dozer_types::ingestion_types::{DeltaLakeConfig, DeltaTable, IngestionMessageKind};
 use dozer_types::types::SourceDefinition::Dynamic;
-use dozer_types::types::{Field, FieldType, Operation};
+use dozer_types::types::{Field, FieldType, ProcessorOperation};
 
 #[tokio::test]
 async fn get_schema_from_deltalake() {
@@ -54,13 +55,13 @@ async fn read_deltalake() {
     for (idx, IngestionMessage { identifier, kind }) in iterator.enumerate() {
         assert_eq!(idx, identifier.seq_in_tx as usize);
         if let IngestionMessageKind::OperationEvent {
-            op: Operation::Insert { new },
+            op: ProcessorOperation::Insert { new },
             ..
         } = kind
         {
-            values.extend(new.values);
+            values.extend(new.get_record().get_fields().into_iter().map(|f| f.clone()).collect_vec());
         }
     }
     values.sort();
-    assert_eq!(fields, values);
+    assert_eq!(fields, values.into_iter().map(|f| f.clone()).collect_vec());
 }

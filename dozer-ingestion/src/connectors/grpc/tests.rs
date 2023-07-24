@@ -13,7 +13,6 @@ use dozer_types::{
     models::connection::{Connection, ConnectionConfig},
     serde_json,
     serde_json::Value,
-    types::Operation,
 };
 use dozer_types::{
     arrow::{datatypes as arrow_types, record_batch::RecordBatch},
@@ -22,7 +21,7 @@ use dozer_types::{
 
 use dozer_types::json_types::JsonValue as dozer_JsonValue;
 use dozer_types::ordered_float::OrderedFloat;
-use dozer_types::types::{FieldDefinition, FieldType, Schema as DozerSchema, SourceDefinition};
+use dozer_types::types::{FieldDefinition, FieldType, ProcessorOperation, Schema as DozerSchema, SourceDefinition};
 use dozer_types::{
     ingestion_types::{GrpcConfig, GrpcConfigSchemas},
     serde_json::json,
@@ -121,9 +120,9 @@ async fn ingest_grpc_default() {
     assert_eq!(msg.identifier.seq_in_tx, 1, "seq_no should be 1");
 
     if let IngestionMessageKind::OperationEvent { op, .. } = msg.kind {
-        if let Operation::Insert { new: record } = op {
-            assert_eq!(record.values[0].as_int(), Some(1675));
-            assert_eq!(record.values[1].as_string(), Some("dario"));
+        if let ProcessorOperation::Insert { new: record } = op {
+            assert_eq!(record.get_record().get_fields()[0].as_int(), Some(1675));
+            assert_eq!(record.get_record().get_fields()[1].as_string(), Some("dario"));
         } else {
             panic!("wrong operation kind");
         }
@@ -255,11 +254,11 @@ async fn ingest_grpc_arrow() {
     assert_eq!(msg.identifier.seq_in_tx, 1, "seq_no should be 1");
 
     if let IngestionMessageKind::OperationEvent { op, .. } = msg.kind {
-        if let Operation::Insert { new: record } = op {
-            assert_eq!(record.values[0].as_int(), Some(1675));
-            assert_eq!(record.values[1].as_string(), Some("dario"));
+        if let ProcessorOperation::Insert { new: record } = op {
+            assert_eq!(record.get_record().get_fields()[0].as_int(), Some(1675));
+            assert_eq!(record.get_record().get_fields()[1].as_string(), Some("dario"));
             assert_eq!(
-                record.values[2].as_json(),
+                record.get_record().get_fields()[2].as_json(),
                 Some(&dozer_JsonValue::Array(vec![
                     dozer_JsonValue::Number(OrderedFloat(1_f64)),
                     dozer_JsonValue::Number(OrderedFloat(2_f64)),

@@ -10,7 +10,7 @@ use crate::connectors::object_store::helper::map_listing_options;
 use crate::connectors::object_store::tests::test_utils::get_local_storage_config;
 use crate::errors::ConnectorError::InitializationError;
 use crate::errors::ObjectStoreObjectError;
-use dozer_types::types::{Field, FieldType, Operation};
+use dozer_types::types::{Field, FieldType, ProcessorOperation};
 
 #[macro_export]
 macro_rules! test_type_conversion {
@@ -97,12 +97,12 @@ async fn test_read_parquet_file() {
             identifier: OpIdentifier { seq_in_tx, .. },
             kind:
                 IngestionMessageKind::OperationEvent {
-                    op: Operation::Insert { new },
+                    op: ProcessorOperation::Insert { new },
                     ..
                 },
         }) = row
         {
-            let values = new.values;
+            let values = new.get_record().get_fields();
 
             assert_eq!(i, seq_in_tx);
 
@@ -173,12 +173,12 @@ async fn test_csv_read() {
             identifier: OpIdentifier { seq_in_tx, .. },
             kind:
                 IngestionMessageKind::OperationEvent {
-                    op: Operation::Insert { new },
+                    op: ProcessorOperation::Insert { new },
                     ..
                 },
         }) = row
         {
-            let values = new.values;
+            let values = new.get_record().get_fields();
 
             assert_eq!(i, seq_in_tx);
             test_type_conversion!(values, 0, Field::Int(_));

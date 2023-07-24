@@ -123,7 +123,7 @@ impl Source for TestSource {
         while let Ok(Some((schema_name, op))) = self.receiver.recv() {
             idx += 1;
             let port = self.name_to_port.get(&schema_name).expect("port not found");
-            fw.send(IngestionMessage::new_op(idx, 0, 0, op), *port)
+            fw.send(IngestionMessage::new_op(idx, 0, 0, op.into()), *port)
                 .unwrap();
         }
         thread::sleep(Duration::from_millis(200));
@@ -187,35 +187,39 @@ impl TestSink {
     fn update_result(&mut self, op: ProcessorOperation) {
         let mut records_map = self.output.lock().expect("Unable to lock the result map");
         match op {
-            Operation::Insert { new } => {
-                let records_item = records_map.get_mut(&get_key(&new));
+            ProcessorOperation::Insert { new } => {
+                let new_ref = new.get_record().clone_deref();
+                let records_item = records_map.get_mut(&get_key(&new_ref));
 
                 if let Some(records) = records_item {
-                    records.push(new);
+                    records.push(new.get_record().clone_deref());
                 } else {
-                    records_map.insert(get_key(&new), vec![new]);
+                    records_map.insert(get_key(&new_ref), vec![new_ref]);
                 }
             }
-            Operation::Delete { ref old } => {
-                if let Some(map_records) = records_map.get_mut(&get_key(old)) {
-                    if let Some(index) = map_records.iter().position(|x| x == old) {
+            ProcessorOperation::Delete { ref old } => {
+                let old_ref = old.get_record().clone_deref();
+                if let Some(map_records) = records_map.get_mut(&get_key(&old_ref)) {
+                    if let Some(index) = map_records.iter().position(|x| *x == old_ref) {
                         map_records.remove(index);
                     }
                 }
             }
-            Operation::Update { ref old, new } => {
-                if let Some(map_records) = records_map.get_mut(&get_key(old)) {
-                    if let Some(index) = map_records.iter().position(|x| x == old) {
+            ProcessorOperation::Update { ref old, new } => {
+                let new_ref = new.get_record().clone_deref();
+                let old_ref = old.get_record().clone_deref();
+                if let Some(map_records) = records_map.get_mut(&get_key(&old_ref)) {
+                    if let Some(index) = map_records.iter().position(|x| *x == old_ref) {
                         map_records.remove(index);
                     }
                 }
 
-                let records_item = records_map.get_mut(&get_key(&new));
+                let records_item = records_map.get_mut(&get_key(&new_ref));
 
                 if let Some(records) = records_item {
-                    records.push(new);
+                    records.push(new_ref);
                 } else {
-                    records_map.insert(get_key(&new), vec![new]);
+                    records_map.insert(get_key(&new_ref), vec![new.get_record().clone_deref()]);
                 }
             }
         }

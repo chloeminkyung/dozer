@@ -5,9 +5,10 @@ use crate::ingestion::Ingestor;
 use deltalake::datafusion::prelude::SessionContext;
 use dozer_types::arrow_types::from_arrow::{map_schema_to_dozer, map_value_to_dozer_field};
 use dozer_types::ingestion_types::{DeltaLakeConfig, IngestionMessage};
-use dozer_types::types::{Operation, Record};
+use dozer_types::types::{ProcessorOperation, ProcessorRecord, Record};
 use futures::StreamExt;
 use std::sync::Arc;
+use dozer_types::types::ref_types::ProcessorRecordRef;
 
 pub struct DeltaLakeReader {
     config: DeltaLakeConfig,
@@ -64,11 +65,11 @@ impl DeltaLakeReader {
                         0_u64,
                         *seq_no,
                         table_index,
-                        Operation::Insert {
-                            new: Record {
+                        ProcessorOperation::Insert {
+                            new: ProcessorRecordRef::new(ProcessorRecord::from(Record {
                                 values: fields,
                                 lifetime: None,
-                            },
+                            })),
                         },
                     ))
                     .unwrap();

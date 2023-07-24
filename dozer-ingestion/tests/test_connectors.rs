@@ -1,3 +1,5 @@
+extern crate core;
+
 use test_suite::{
     run_test_suite_basic_cud, run_test_suite_basic_data_ready, run_test_suite_basic_insert_only,
 };

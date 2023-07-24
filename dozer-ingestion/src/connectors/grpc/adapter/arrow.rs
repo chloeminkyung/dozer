@@ -122,7 +122,7 @@ pub fn handle_message(
                 0,
                 seq_no as u64,
                 table_index,
-                op.clone(),
+                op.into(),
             ))
             .map_err(|e| ConnectorError::InternalError(Box::new(e)))?;
         seq_no += 1;

@@ -11,15 +11,13 @@ use dozer_types::errors::internal::BoxedError;
 use dozer_types::ingestion_types::IngestionMessage;
 use dozer_types::log::debug;
 use dozer_types::ordered_float::OrderedFloat;
-use dozer_types::types::{
-    Field, FieldDefinition, FieldType, ProcessorOperation, ProcessorRecord, Schema,
-    SourceDefinition,
-};
+use dozer_types::types::{Field, FieldDefinition, FieldType, ProcessorOperation, ProcessorRecord, Record, Schema, SourceDefinition};
 
 use std::collections::HashMap;
 
 use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
+use dozer_types::types::ref_types::ProcessorRecordRef;
 
 use crate::pipeline::builder::{statement_to_pipeline, SchemaSQLContext};
 
@@ -109,11 +107,11 @@ impl Source for TestSource {
                     0,
                     0,
                     ProcessorOperation::Insert {
-                        new: ProcessorRecord::new(vec![
+                        new: ProcessorRecordRef::new(ProcessorRecord::from(Record::new(vec![
                             Field::Int(0),
                             Field::String("Italy".to_string()),
                             Field::Float(OrderedFloat(5.5)),
-                        ]),
+                        ]))),
                     },
                 ),
                 DEFAULT_PORT_HANDLE,

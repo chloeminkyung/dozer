@@ -138,7 +138,7 @@ impl<'a> CDCHandler<'a> {
                                     self.begin_lsn,
                                     self.seq_no,
                                     table_index,
-                                    op,
+                                    op.into(),
                                 ))
                                 .map_err(ConnectorError::IngestorError)?;
                         }

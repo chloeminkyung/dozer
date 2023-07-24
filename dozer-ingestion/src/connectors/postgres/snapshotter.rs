@@ -131,7 +131,7 @@ impl<'a> PostgresSnapshotter<'a> {
                 }
                 Some((table_index, evt)) => {
                     self.ingestor
-                        .handle_message(IngestionMessage::new_op(0, idx, table_index, evt))
+                        .handle_message(IngestionMessage::new_op(0, idx, table_index, evt.into()))
                         .map_err(ConnectorError::IngestorError)?;
                     idx += 1;
                 }
