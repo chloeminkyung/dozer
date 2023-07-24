@@ -1,7 +1,7 @@
 use dozer_types::{
     chrono::{Duration, DurationRound},
     types::{
-        ref_types::ProcessorRecordRef, Field, FieldDefinition, FieldType, ProcessorRecord, Schema,
+        ref_types::ProcessorRecordRef, Field, FieldDefinition, FieldType, Schema,
         SourceDefinition,
     },
 };

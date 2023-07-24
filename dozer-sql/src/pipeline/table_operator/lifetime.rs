@@ -38,7 +38,7 @@ impl TableOperator for LifetimeTableOperator {
         record: &ProcessorRecordRef,
         schema: &Schema,
     ) -> Result<Vec<ProcessorRecordRef>, TableOperatorError> {
-        let mut source_record = record.clone();
+        let source_record = record.clone();
         let mut ttl_records = vec![];
         if let Some(operator) = &self.operator {
             let operator_records = operator.execute(&source_record, schema)?;

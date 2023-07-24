@@ -7,6 +7,7 @@ use dozer_types::{
         SourceDefinition, TimeUnit,
     },
 };
+use dozer_types::types::ref_types::ProcessorRecordRef;
 
 use crate::pipeline::{
     expression::execution::Expression,
@@ -40,10 +41,9 @@ fn test_lifetime() {
         )
         .to_owned();
 
-    let record = ProcessorRecord::new(vec![
-        Field::Int(0),
-        Field::Timestamp(DateTime::parse_from_rfc3339("2020-01-01T00:13:00Z").unwrap()),
-    ]);
+    let mut record = ProcessorRecord::new();
+    record.extend_direct_field(Field::Int(0));
+    record.extend_direct_field(Field::Timestamp(DateTime::parse_from_rfc3339("2020-01-01T00:13:00Z").unwrap()));
 
     let table_operator = LifetimeTableOperator::new(
         None,
@@ -64,14 +64,13 @@ fn test_lifetime() {
         DozerDuration(Duration::from_secs(60), TimeUnit::Seconds),
     );
 
-    let result = table_operator.execute(&record, &schema).unwrap();
+    let result = table_operator.execute(&ProcessorRecordRef::new(record), &schema).unwrap();
     assert_eq!(result.len(), 1);
     let lifetime_record = result.get(0).unwrap();
 
-    let mut expected_record = ProcessorRecord::new(vec![
-        Field::Int(0),
-        Field::Timestamp(DateTime::parse_from_rfc3339("2020-01-01T00:13:00Z").unwrap()),
-    ]);
+    let mut expected_record = ProcessorRecord::new();
+    expected_record.extend_direct_field(Field::Int(0));
+    expected_record.extend_direct_field(Field::Timestamp(DateTime::parse_from_rfc3339("2020-01-01T00:13:00Z").unwrap()));
 
     expected_record.set_lifetime(Some(Lifetime {
         reference: Field::Timestamp(DateTime::parse_from_rfc3339("2020-01-01T00:13:00Z").unwrap()),

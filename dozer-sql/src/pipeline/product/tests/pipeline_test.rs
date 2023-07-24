@@ -19,6 +19,7 @@ use dozer_types::types::{
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use dozer_types::types::ref_types::ProcessorRecordRef;
 
 use crate::pipeline::builder::{statement_to_pipeline, SchemaSQLContext};
 
@@ -191,70 +192,98 @@ impl Source for TestSource {
         fw: &mut dyn SourceChannelForwarder,
         _last_checkpoint: Option<(u64, u64)>,
     ) -> Result<(), BoxedError> {
+        let mut new_rec_1 = ProcessorRecord::new();
+        new_rec_1.extend_direct_field(Field::Int(0));
+        new_rec_1.extend_direct_field(Field::String("IT".to_string()));
+        let mut new_rec_2 = ProcessorRecord::new();
+        new_rec_2.extend_direct_field(Field::Int(1));
+        new_rec_2.extend_direct_field(Field::String("HR".to_string()));
+        let mut new_rec_3 = ProcessorRecord::new();
+        new_rec_3.extend_direct_field(Field::Int(10000));
+        new_rec_3.extend_direct_field(Field::String("Alice".to_string()));
+        new_rec_3.extend_direct_field(Field::Int(0));
+        new_rec_3.extend_direct_field(Field::String("UK".to_string()));
+        new_rec_3.extend_direct_field(Field::Float(OrderedFloat(1.1)));
+        let mut new_rec_4 = ProcessorRecord::new();
+        new_rec_4.extend_direct_field(Field::Int(100001));
+        new_rec_4.extend_direct_field(Field::String("Bob".to_string()));
+        new_rec_4.extend_direct_field(Field::Int(0));
+        new_rec_4.extend_direct_field(Field::String("UK".to_string()));
+        new_rec_4.extend_direct_field(Field::Float(OrderedFloat(1.1)));
+        let mut new_rec_5 = ProcessorRecord::new();
+        new_rec_5.extend_direct_field(Field::String("UK".to_string()));
+        new_rec_5.extend_direct_field(Field::String("United Kingdom".to_string()));
+        let mut new_rec_6 = ProcessorRecord::new();
+        new_rec_6.extend_direct_field(Field::String("SG".to_string()));
+        new_rec_6.extend_direct_field(Field::String("Singapore".to_string()));
+        let mut new_rec_7 = ProcessorRecord::new();
+        new_rec_7.extend_direct_field(Field::Int(100002));
+        new_rec_7.extend_direct_field(Field::String("Craig".to_string()));
+        new_rec_7.extend_direct_field(Field::Int(0));
+        new_rec_7.extend_direct_field(Field::String("SG".to_string()));
+        new_rec_7.extend_direct_field(Field::Float(OrderedFloat(1.1)));
+        let mut new_rec_8 = ProcessorRecord::new();
+        new_rec_8.extend_direct_field(Field::Int(100003));
+        new_rec_8.extend_direct_field(Field::String("Dan".to_string()));
+        new_rec_8.extend_direct_field(Field::Int(0));
+        new_rec_8.extend_direct_field(Field::String("UK".to_string()));
+        new_rec_8.extend_direct_field(Field::Float(OrderedFloat(1.1)));
+        let mut new_rec_9 = ProcessorRecord::new();
+        new_rec_9.extend_direct_field(Field::Int(100004));
+        new_rec_9.extend_direct_field(Field::String("Eve".to_string()));
+        new_rec_9.extend_direct_field(Field::Int(1));
+        new_rec_9.extend_direct_field(Field::String("SG".to_string()));
+        new_rec_9.extend_direct_field(Field::Float(OrderedFloat(1.1)));
+        let mut new_rec_10 = ProcessorRecord::new();
+        new_rec_10.extend_direct_field(Field::Int(100005));
+        new_rec_10.extend_direct_field(Field::String("Frank".to_string()));
+        new_rec_10.extend_direct_field(Field::Int(1));
+        new_rec_10.extend_direct_field(Field::String("SG".to_string()));
+        new_rec_10.extend_direct_field(Field::Float(OrderedFloat(1.5)));
+        let mut new_rec_11 = ProcessorRecord::new();
+        new_rec_11.extend_direct_field(Field::Int(0));
+        new_rec_11.extend_direct_field(Field::String("RD".to_string()));
+
         let operations = vec![
             (
                 ProcessorOperation::Insert {
-                    new: ProcessorRecord::new(vec![Field::Int(0), Field::String("IT".to_string())]),
+                    new: ProcessorRecordRef::new(new_rec_1.to_owned()),
                 },
                 DEPARTMENT_PORT,
             ),
             (
                 ProcessorOperation::Insert {
-                    new: ProcessorRecord::new(vec![Field::Int(1), Field::String("HR".to_string())]),
+                    new: ProcessorRecordRef::new(new_rec_2),
                 },
                 DEPARTMENT_PORT,
             ),
             (
                 ProcessorOperation::Insert {
-                    new: ProcessorRecord::new(vec![
-                        Field::Int(10000),
-                        Field::String("Alice".to_string()),
-                        Field::Int(0),
-                        Field::String("UK".to_string()),
-                        Field::Float(OrderedFloat(1.1)),
-                    ]),
+                    new: ProcessorRecordRef::new(new_rec_3),
                 },
                 USER_PORT,
             ),
             (
                 ProcessorOperation::Insert {
-                    new: ProcessorRecord::new(vec![
-                        Field::Int(10001),
-                        Field::String("Bob".to_string()),
-                        Field::Int(0),
-                        Field::String("UK".to_string()),
-                        Field::Float(OrderedFloat(1.1)),
-                    ]),
+                    new: ProcessorRecordRef::new(new_rec_4),
                 },
                 USER_PORT,
             ),
             (
                 ProcessorOperation::Insert {
-                    new: ProcessorRecord::new(vec![
-                        Field::String("UK".to_string()),
-                        Field::String("United Kingdom".to_string()),
-                    ]),
+                    new: ProcessorRecordRef::new(new_rec_5),
                 },
                 COUNTRY_PORT,
             ),
             (
                 ProcessorOperation::Insert {
-                    new: ProcessorRecord::new(vec![
-                        Field::String("SG".to_string()),
-                        Field::String("Singapore".to_string()),
-                    ]),
+                    new: ProcessorRecordRef::new(new_rec_6),
                 },
                 COUNTRY_PORT,
             ),
             (
                 ProcessorOperation::Insert {
-                    new: ProcessorRecord::new(vec![
-                        Field::Int(10002),
-                        Field::String("Craig".to_string()),
-                        Field::Int(1),
-                        Field::String("SG".to_string()),
-                        Field::Float(OrderedFloat(1.1)),
-                    ]),
+                    new: ProcessorRecordRef::new(new_rec_7),
                 },
                 USER_PORT,
             ),
@@ -269,25 +298,13 @@ impl Source for TestSource {
             // ),
             (
                 ProcessorOperation::Insert {
-                    new: ProcessorRecord::new(vec![
-                        Field::Int(10003),
-                        Field::String("Dan".to_string()),
-                        Field::Int(0),
-                        Field::String("UK".to_string()),
-                        Field::Float(OrderedFloat(1.1)),
-                    ]),
+                    new: ProcessorRecordRef::new(new_rec_8),
                 },
                 USER_PORT,
             ),
             (
                 ProcessorOperation::Insert {
-                    new: ProcessorRecord::new(vec![
-                        Field::Int(10004),
-                        Field::String("Eve".to_string()),
-                        Field::Int(1),
-                        Field::String("SG".to_string()),
-                        Field::Float(OrderedFloat(1.1)),
-                    ]),
+                    new: ProcessorRecordRef::new(new_rec_9),
                 },
                 USER_PORT,
             ),
@@ -307,20 +324,14 @@ impl Source for TestSource {
             // ),
             (
                 ProcessorOperation::Insert {
-                    new: ProcessorRecord::new(vec![
-                        Field::Int(10005),
-                        Field::String("Frank".to_string()),
-                        Field::Int(1),
-                        Field::String("SG".to_string()),
-                        Field::Float(OrderedFloat(1.5)),
-                    ]),
+                    new: ProcessorRecordRef::new(new_rec_10),
                 },
                 USER_PORT,
             ),
             (
                 ProcessorOperation::Update {
-                    old: ProcessorRecord::new(vec![Field::Int(0), Field::String("IT".to_string())]),
-                    new: ProcessorRecord::new(vec![Field::Int(0), Field::String("RD".to_string())]),
+                    old: ProcessorRecordRef::new(new_rec_1),
+                    new: ProcessorRecordRef::new(new_rec_11),
                 },
                 DEPARTMENT_PORT,
             ),
