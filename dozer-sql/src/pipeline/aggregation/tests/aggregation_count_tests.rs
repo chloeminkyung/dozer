@@ -9,6 +9,7 @@ use dozer_core::DEFAULT_PORT_HANDLE;
 use dozer_types::types::FieldType::{Date, Decimal, Duration, Float, Int, Timestamp};
 use dozer_types::types::{ProcessorOperation, ProcessorRecord};
 use std::collections::HashMap;
+use dozer_types::types::ref_types::ProcessorRecordRef;
 
 #[test]
 fn test_count_star() {
@@ -28,9 +29,14 @@ fn test_count_star() {
     */
     output!(processor, insert_field(ITALY, FIELD_100_FLOAT));
     let out = output!(processor, insert_field(ITALY, FIELD_100_FLOAT));
+    let mut old_record = ProcessorRecord::new();
+    let mut new_record = ProcessorRecord::new();
+    old_record.extend_direct_field(FIELD_1_INT.clone());
+    new_record.extend_direct_field(FIELD_2_INT.clone());
+
     let exp = vec![ProcessorOperation::Update {
-        old: ProcessorRecord::new(vec![FIELD_1_INT.clone()]),
-        new: ProcessorRecord::new(vec![FIELD_2_INT.clone()]),
+        old: ProcessorRecordRef::new(old_record),
+        new: ProcessorRecordRef::new(new_record),
     }];
     assert_eq!(out, exp);
 }

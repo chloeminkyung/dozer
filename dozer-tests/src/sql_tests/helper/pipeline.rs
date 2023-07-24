@@ -17,7 +17,7 @@ use dozer_types::crossbeam::channel::{Receiver, Sender};
 use dozer_types::epoch::Epoch;
 use dozer_types::errors::internal::BoxedError;
 use dozer_types::ingestion_types::IngestionMessage;
-use dozer_types::types::{Operation, Record, Schema, SourceDefinition};
+use dozer_types::types::{Operation, ProcessorOperation, Record, Schema, SourceDefinition};
 use std::collections::HashMap;
 
 use std::hash::{Hash, Hasher};
@@ -184,7 +184,7 @@ impl TestSink {
         Self { output }
     }
 
-    fn update_result(&mut self, op: Operation) {
+    fn update_result(&mut self, op: ProcessorOperation) {
         let mut records_map = self.output.lock().expect("Unable to lock the result map");
         match op {
             Operation::Insert { new } => {
@@ -223,7 +223,7 @@ impl TestSink {
 }
 
 impl Sink for TestSink {
-    fn process(&mut self, _from_port: PortHandle, op: Operation) -> Result<(), BoxedError> {
+    fn process(&mut self, _from_port: PortHandle, op: ProcessorOperation) -> Result<(), BoxedError> {
         self.update_result(op);
         Ok(())
     }
